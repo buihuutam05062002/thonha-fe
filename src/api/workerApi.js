@@ -28,3 +28,7 @@ export async function getMyProfile() {
     throw err;
   }
 }
+
+export async function updateAvailability(available) {
+  return await axiosClient.patch("/worker/availability",{available});
+}
