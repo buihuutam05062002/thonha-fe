@@ -7,7 +7,7 @@ import { Footer } from "../layout/Footer";
 import { StepProgress } from "./StepProgress";
 import { RegisterWorkerDocumentsForm } from "./RegisterWorkerDocumentForm";
 
-export function RegisterWorkerProfilePage() {
+export default function RegisterWorkerProfilePage() {
   const [profile, setProfile] = useState(null);
   const [step, setStep] = useState(1);
   const [basicInfo, setBasicInfo] = useState(null);
