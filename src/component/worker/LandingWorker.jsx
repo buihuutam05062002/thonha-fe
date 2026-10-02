@@ -10,47 +10,92 @@ import {
 } from "react-bootstrap";
 import logoImg from "../../assets/logo.png"; // Điều chỉnh path logo của bạn
 import { Link, useNavigate } from "react-router-dom";
+import { getAccessToken, getStoredUser, logout } from "../../api/client.js";
 
 export default function LandingWorker() {
   const navigate = useNavigate();
+  const [loggedIn, setLoggedIn] = React.useState(() => !!getAccessToken());
+  const user = getStoredUser();
+
+  React.useEffect(() => {
+    const syncAuth = () => setLoggedIn(!!getAccessToken());
+    window.addEventListener("storage", syncAuth);
+    window.addEventListener("auth-changed", syncAuth);
+    syncAuth();
+    return () => {
+      window.removeEventListener("storage", syncAuth);
+      window.removeEventListener("auth-changed", syncAuth);
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch {
+      // logout() luôn clear session kể cả khi API lỗi.
+    } finally {
+      setLoggedIn(false);
+      navigate("/worker", { replace: true });
+    }
+  };
+
   return (
     <div className="bg-light min-vh-100 d-flex flex-column">
       {/* Header Landing Page */}
-      <Navbar bg="white" expand="lg" className="border-bottom sticky-top py-3">
-        <Container>
+      <Navbar bg="white" expand="lg" className="worker-landing-navbar border-bottom sticky-top py-3">
+        <Container className="worker-landing-navbar-inner">
           <Navbar.Brand as={Link} to="/">
             <img
               src={logoImg}
               alt="Thợ Nhà"
-              style={{ height: "40px", width: "auto", objectFit: "contain" }}
+              className="worker-landing-logo"
             />
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="landing-navbar" />
           <Navbar.Collapse id="landing-navbar">
-            <Nav className="ms-auto align-items-center gap-3">
-              <Nav.Link href="#about" className="fw-semibold text-dark">
+            <Nav className="ms-auto align-items-center gap-2 flex-nowrap worker-landing-nav">
+              <Nav.Link href="#about" className="fw-semibold text-dark text-nowrap worker-landing-nav-link">
                 Về chúng tôi
               </Nav.Link>
-              <Nav.Link href="#benefits" className="fw-semibold text-dark">
+              <Nav.Link href="#benefits" className="fw-semibold text-dark text-nowrap worker-landing-nav-link">
                 Quyền lợi
               </Nav.Link>
-              <Nav.Link href="#process" className="fw-semibold text-dark">
+              <Nav.Link href="#process" className="fw-semibold text-dark text-nowrap worker-landing-nav-link">
                 Quy trình
               </Nav.Link>
-              <Button
-                variant="outline-primary"
-                className="fw-bold px-4 rounded-pill border-2"
-                style={{ borderColor: "#F5820D", color: "#F5820D" }}
-              >
-                Đăng Nhập
-              </Button>
+              {loggedIn ? (
+                <>
+                  <Button
+                    variant="outline-secondary"
+                    className="fw-bold px-4 rounded-pill worker-account-btn"
+                    onClick={() => navigate(user?.roles?.includes("WORKER") ? "/worker/dashboard" : "/worker/register")}
+                  >
+                    {user?.roles?.includes("WORKER") ? "Bảng điều khiển" : "Tài khoản"}
+                  </Button>
+                  <Button
+                    variant="outline-primary"
+                    className="fw-bold px-4 rounded-pill border-2 worker-login-btn"
+                    onClick={handleLogout}
+                  >
+                    Đăng xuất
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  variant="outline-primary"
+                  className="fw-bold px-4 rounded-pill border-2 worker-landing-login"
+                  onClick={() => navigate("/auth")}
+                >
+                  Đăng nhập
+                </Button>
+              )}
             </Nav>
           </Navbar.Collapse>
         </Container>
       </Navbar>
 
       {/* Hero Section */}
-      <section className="py-5 bg-white border-bottom">
+      <section id="about" className="py-5 bg-white border-bottom">
         <Container className="py-4">
           <Row className="align-items-center g-4">
             <Col lg={7}>
@@ -144,6 +189,32 @@ export default function LandingWorker() {
                     <p className="text-muted small mb-0">{item.desc}</p>
                   </Card.Body>
                 </Card>
+              </Col>
+            ))}
+          </Row>
+        </Container>
+      </section>
+
+      {/* Process Section */}
+      <section id="process" className="worker-process-section py-5 bg-white border-top">
+        <Container className="py-4">
+          <div className="text-center mb-5">
+            <span className="worker-section-kicker">QUY TRÌNH ĐƠN GIẢN</span>
+            <h2 className="fw-bold text-dark mt-2 mb-2">Bắt đầu nhận việc chỉ với 3 bước</h2>
+            <p className="text-muted mb-0">Hồ sơ rõ ràng, quy trình minh bạch, chủ động thời gian làm việc.</p>
+          </div>
+          <Row className="g-4">
+            {[
+              { n: "01", title: "Tạo hồ sơ", desc: "Điền thông tin nghề nghiệp và chuyên môn của bạn." },
+              { n: "02", title: "Xác thực hồ sơ", desc: "Bổ sung giấy tờ để Thợ Nhà kiểm tra và phê duyệt." },
+              { n: "03", title: "Nhận việc", desc: "Bật trạng thái nhận việc và bắt đầu kết nối khách hàng." },
+            ].map((item) => (
+              <Col key={item.n} md={4}>
+                <div className="worker-process-card h-100">
+                  <span className="worker-process-number">{item.n}</span>
+                  <h5 className="fw-bold text-dark mt-3 mb-2">{item.title}</h5>
+                  <p className="text-muted small mb-0">{item.desc}</p>
+                </div>
               </Col>
             ))}
           </Row>

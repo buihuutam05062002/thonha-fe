@@ -1,30 +1,19 @@
-import { Route, Routes } from 'react-router-dom';
-import './App.css'
-import RegisterWorkerProfilePage from './component/worker/RegisterWorkerProfilePage'
-import WorkerDashboard from './component/worker/WorkerDashboard';
-import LandingWorker from './component/worker/LandingWorker';
-import  AdminLayout from './layouts/AdminLayout'
-import UserManagement from "./pages/user-management/UserManagement";
-import WorkerApprovalPage from "./pages/worker-approval/WorkerApprovalPage"
-import { Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import CustomerApp from "./areas/customer/CustomerApp.jsx";
+import WorkerArea from "./areas/worker/WorkerArea.jsx";
+import AdminArea from "./areas/admin/AdminArea.jsx";
+import AuthPage from "./pages/AuthPage.jsx";
 
-function App() {
-
+export default function App() {
   return (
-    <>
-    <Routes>
-      <Route  path="/" element={<LandingWorker />} />
-      <Route path="/worker/register" element={<RegisterWorkerProfilePage/>}/>
-      <Route path="/worker/dashboard" element={<WorkerDashboard/>}/>
-      <Route element={<AdminLayout />}>
-          <Route  element={<Navigate to="/users" replace />} />
-          {/* <Route path="/dashboard" element={<Placeholder title="Tổng quan" />} /> */}
-          <Route path="/profiles" element={<WorkerApprovalPage />} />
-          <Route path="/users" element={<UserManagement />} />
-      </Route>
-    </Routes>
-    </>
-  )
+    <BrowserRouter>
+      <Routes>
+        <Route path="/auth" element={<AuthPage onAuthenticated={() => (location.href = "/")} />} />
+        <Route path="/worker/*" element={<WorkerArea />} />
+        <Route path="/admin/*" element={<AdminArea />} />
+        <Route path="/*" element={<CustomerApp />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
-
-export default App;

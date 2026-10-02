@@ -1,10 +1,15 @@
 import { Outlet } from "react-router-dom";
 import Sidebar from "../components/Sidebar/Sidebar";
+import { getStoredUser } from "../api/client.js";
 import "./AdminLayout.css";
 
 export default function AdminLayout() {
-  // Sau này lấy user thật từ đăng nhập / context rồi truyền vào
-  const user = { name: "Admin", role: "Admin", avatar: "" };
+  const stored = getStoredUser();
+  const user = {
+    name: stored?.fullName || "Admin",
+    role: (stored?.roles || []).join(", ") || "ADMIN",
+    avatar: stored?.avatarUrl || "",
+  };
 
   return (
     <div className="admin-layout">

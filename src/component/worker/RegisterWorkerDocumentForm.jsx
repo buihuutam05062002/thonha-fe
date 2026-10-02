@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { parseApiError } from "../../api/apiError";
-import { registerWorker } from "../../api/workerAPI";
+import { registerWorker } from "../../api/workerApi";
 import { DocumentUploadField } from "../ui/DocumentUploadField";
 
 export function RegisterWorkerDocumentsForm({ basicInfo, onBack, onSuccess }) {

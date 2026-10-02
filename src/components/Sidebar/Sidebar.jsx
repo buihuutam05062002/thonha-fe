@@ -11,15 +11,15 @@ import logo from "../../assets/logo.jpg";
 
 // Sửa lại path cho khớp với router của bạn
 const MENU = [
-  { label: "Tổng quan", to: "/dashboard", icon: LayoutDashboard },
-  { label: "Duyệt hồ sơ", to: "/profiles", icon: FileCheck },
-  { label: "Người dùng", to: "/users", icon: Users },
-  { label: "Danh mục", to: "/categories", icon: LayoutGrid },
-  { label: "Thống kê", to: "/statistics", icon: ClipboardList },
-  { label: "Hội thoại", to: "/conversations", icon: MessageCircle },
-  { label: "Khiếu nại", to: "/complaints", icon: CircleAlert },
-  { label: "Xuất file", to: "/export", icon: FileDown },
-  { label: "Hoa hồng", to: "/commissions", icon: Percent },
+  { label: "Tổng quan", to: "/admin", icon: LayoutDashboard },
+  { label: "Duyệt hồ sơ", to: "/admin/profiles", icon: FileCheck },
+  { label: "Người dùng", to: "/admin/users", icon: Users },
+  { label: "Danh mục", to: "/admin/categories", icon: LayoutGrid },
+  { label: "Thống kê", to: "/admin/statistics", icon: ClipboardList },
+  { label: "Hội thoại", to: "/admin/conversations", icon: MessageCircle },
+  { label: "Khiếu nại", to: "/admin/complaints", icon: CircleAlert },
+  { label: "Xuất file", to: "/admin/export", icon: FileDown },
+  { label: "Hoa hồng", to: "/admin/commissions", icon: Percent },
 ];
 
 export default function Sidebar({ user = { name: "Admin", role: "Admin", avatar: "" } }) {
@@ -33,8 +33,10 @@ export default function Sidebar({ user = { name: "Admin", role: "Admin", avatar:
   }, [query]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("user");
+    navigate("/auth");
   };
 
   return (
@@ -97,7 +99,7 @@ export default function Sidebar({ user = { name: "Admin", role: "Admin", avatar:
           </button>
         </div>
 
-        <NavLink to="/settings" className="sb-link" title={collapsed ? "Cài đặt" : undefined}>
+        <NavLink to="/admin/settings" className="sb-link" title={collapsed ? "Cài đặt" : undefined}>
           <Settings size={16} aria-hidden="true" />
           <span className="sb-text">Cài đặt</span>
         </NavLink>

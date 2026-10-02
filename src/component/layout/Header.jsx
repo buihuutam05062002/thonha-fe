@@ -1,62 +1,98 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import logoImg from "../../assets/logo.png";
 import { Navbar, Nav, Container, Button } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { getAccessToken, logout } from "../../api/client.js";
+
 const NAV_ITEMS = [
-  { name: "Về chúng tôi", href: "#about" },
-  { name: "Khách hàng", href: "#customers" },
-  { name: "Thợ", href: "#workers" },
+  { name: "Về chúng tôi", href: "/worker#about" },
+  { name: "Quyền lợi", href: "/worker#benefits" },
+  { name: "Quy trình", href: "/worker#process" },
 ];
 
-function LogoImg({ height = 40 }) {
-  return (
-    <img
-      src={logoImg}
-      alt="Thợ Nhà"
-      style={{ height, width: "auto", display: "block" }}
-    />
-  );
-}
-
 export function Header() {
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(!!getAccessToken());
+
+  useEffect(() => {
+    setLoggedIn(!!getAccessToken());
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch {
+      // clearSession() is handled inside logout even when the API fails.
+    } finally {
+      setLoggedIn(false);
+      navigate("/worker");
+    }
+  };
 
   return (
     <Navbar
       bg="white"
       expand="lg"
-      className="border-bottom sticky-top py-3 w-100"
+      className="worker-register-navbar border-bottom sticky-top py-3 w-100"
     >
-      {/* <Container fluid className="px-4"> */}
-      <Navbar.Brand as={Link} to="/">
-        <img
-          src={logoImg}
-          alt="Thợ Nhà"
-          style={{ height: "40px", width: "auto", objectFit: "contain" }}
+      <Container className="worker-register-navbar-inner">
+        <Navbar.Brand as={Link} to="/worker" className="worker-register-brand">
+          <img
+            src={logoImg}
+            alt="Thợ Nhà"
+            className="worker-header-logo"
+          />
+        </Navbar.Brand>
+
+        <Navbar.Toggle
+          aria-controls="register-navbar"
+          onClick={() => setMenuOpen((v) => !v)}
         />
-      </Navbar.Brand>
-      <Navbar.Toggle aria-controls="register-navbar" />
-      <Navbar.Collapse id="register-navbar">
-        <Nav className="ms-auto align-items-center gap-3">
-          {NAV_ITEMS.map((item) => (
-            <Nav.Link
-              key={item.name}
-              href={item.href}
-              className="fw-semibold text-dark"
-            >
-              {item.name}
-            </Nav.Link>
-          ))}
-          <Button
-            variant="outline-primary"
-            className="fw-bold px-4 rounded-pill border-2"
-            style={{ borderColor: "#F5820D", color: "#F5820D" }}
-          >
-            Đăng Nhập
-          </Button>
-        </Nav>
-      </Navbar.Collapse>
-      {/* </Container> */}
+
+        <Navbar.Collapse id="register-navbar" in={menuOpen}>
+          <Nav className="ms-auto align-items-center worker-register-nav">
+            {NAV_ITEMS.map((item) => (
+              <Nav.Link
+                key={item.name}
+                as={Link}
+                to={item.href}
+                className="fw-semibold text-dark worker-register-nav-link"
+                onClick={() => setMenuOpen(false)}
+              >
+                {item.name}
+              </Nav.Link>
+            ))}
+
+            {loggedIn ? (
+              <>
+                <Button
+                  variant="outline-secondary"
+                  className="fw-bold px-4 rounded-pill worker-account-btn"
+                  onClick={() => navigate("/profile")}
+                >
+                  Tài khoản
+                </Button>
+                <Button
+                  variant="outline-primary"
+                  className="fw-bold px-4 rounded-pill border-2 worker-login-btn"
+                  onClick={handleLogout}
+                >
+                  Đăng xuất
+                </Button>
+              </>
+            ) : (
+              <Button
+                variant="outline-primary"
+                className="fw-bold px-4 rounded-pill border-2 worker-login-btn"
+                onClick={() => navigate("/auth")}
+              >
+                Đăng nhập
+              </Button>
+            )}
+          </Nav>
+        </Navbar.Collapse>
+      </Container>
     </Navbar>
   );
 }

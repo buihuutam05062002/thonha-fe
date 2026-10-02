@@ -1,6 +1,7 @@
 import axiosClient from "./axiosClient";
 
 export async function getListServiceCategory() {
-    const response = await axiosClient.get("/service-category");
-    return response?.data ?? response;;
+  // Merged backend exposes GET /api/v1/service-categories
+  // axiosClient already returns response.data.
+  return await axiosClient.get("/service-categories");
 }
