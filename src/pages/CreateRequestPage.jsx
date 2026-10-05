@@ -2,8 +2,10 @@ import {useCallback, useEffect, useRef, useState} from 'react';
 import {
     ArrowLeft, Camera, Check, Droplet, Refrigerator, WashingMachine, Wind, Wrench, X, Zap,
 } from 'lucide-react';
-import {createRequest, getCategories, getAddresses} from '../api/client.js';
-import {autocompleteAddress, getPlaceDetail} from "../api/client.js";
+import {createRepairRequest} from '../api/repairRequestApi';
+import {autocompleteAddress, getPlaceDetail} from '../api/mapApi';
+import {getCategories} from '../api/categoryApi';
+import {getAddresses} from '../api/addressApi';
 import RequestTrackingPage from './RequestTrackingPage.jsx';
 import logoImg from '../assets/logo.png';
 
@@ -28,12 +30,12 @@ const STEP_LABELS = ['Dịch vụ', 'Sự cố', 'Địa chỉ', 'Thời gian', 
 const EMPTY_FORM = {
     danhMucId: null,
     moTa: '',
-    mucDoUuTien: 'THUONG',
+    mucDoUuTien: 'NORMAL',
     diaChiId: null,
     diaChiSnapshot: '',
     lat: null,
     lng: null,
-    loaiThoiGian: 'NGAY_LAP_TUC',
+    loaiThoiGian: 'ASAP',
     thoiGianHen: '',
 };
 
@@ -67,7 +69,7 @@ export default function CreateRequestPage() {
     const [showOtherAddresses, setShowOtherAddresses] = useState(false);
     const selectedAddress =
         addresses.find((address) => address.id === form.diaChiId) ||
-        addresses.find((address) => address.macDinh);
+        addresses.find((address) => address.defaultAddress);
 
     const mediaRef = useRef(media);
     mediaRef.current = media;
@@ -96,13 +98,13 @@ export default function CreateRequestPage() {
 
                 setAddresses(list);
 
-                const defaultAddress = list.find((address) => address.macDinh);
+                const defaultAddress = list.find((address) => address.defaultAddress);
 
                 if (defaultAddress) {
                     setForm((f) => ({
                         ...f,
                         diaChiId: defaultAddress.id,
-                        diaChiSnapshot: defaultAddress.diaChi,
+                        diaChiSnapshot: defaultAddress.fullAddress,
                         lat: defaultAddress.lat,
                         lng: defaultAddress.lng,
                     }));
@@ -230,7 +232,7 @@ export default function CreateRequestPage() {
                 loaiThoiGian: form.loaiThoiGian,
                 thoiGianHen: form.loaiThoiGian === 'HEN_GIO' ? form.thoiGianHen : null,
             };
-            const res = await createRequest(data, media.map((m) => m.file));
+            const res = await createRepairRequest(data, media.map((m) => m.file));
             setResult(res);
         } catch (e) {
             setError(e.message);
@@ -411,7 +413,7 @@ export default function CreateRequestPage() {
 
                             <span className="label">Mức độ</span>
                             <div className="chips" role="radiogroup" aria-label="Mức độ ưu tiên">
-                                {[['THUONG', 'Thường'], ['KHAN_CAP', 'Khẩn cấp']].map(([v, l]) => (
+                                {[['NORMAL', 'Thường'], ['URGENT', 'Khẩn cấp']].map(([v, l]) => (
                                     <button
                                         key={v}
                                         type="button"
@@ -433,7 +435,7 @@ export default function CreateRequestPage() {
                                 <p className="hint">Đang tải địa chỉ đã lưu...</p>
                             ) : (
                                 <>
-                                    {selectedAddress && (
+{selectedAddress && (
                                         <>
                                             <div className="saved-address-header">
                             <span className="label">
@@ -472,7 +474,7 @@ export default function CreateRequestPage() {
                                                     );
                                                     setField(
                                                         'diaChiSnapshot',
-                                                        selectedAddress.diaChi
+                                                        selectedAddress.fullAddress
                                                     );
                                                     setField(
                                                         'lat',
@@ -490,10 +492,10 @@ export default function CreateRequestPage() {
                                                 <div className="address-card-content">
                                                     <div className="address-card-title">
                                                         <strong>
-                                                            {selectedAddress.tenGoi}
+                                                            {selectedAddress.label}
                                                         </strong>
 
-                                                        {selectedAddress.macDinh && (
+                                                        {selectedAddress.defaultAddress && (
                                                             <span className="address-default">
                                                                 Mặc định
                                                             </span>
@@ -501,7 +503,7 @@ export default function CreateRequestPage() {
                                                     </div>
 
                                                     <p>
-                                                        {selectedAddress.diaChi}
+                                                        {selectedAddress.fullAddress}
                                                     </p>
                                                 </div>
 
@@ -518,50 +520,50 @@ export default function CreateRequestPage() {
                                                             (address) =>
                                                                 address.id !==
                                                                 selectedAddress.id
-                                                        )
-                                                        .map((address) => (
-                                                            <button
-                                                                key={address.id}
-                                                                type="button"
-                                                                className="address-card"
-                                                                onClick={() => {
-                                                                    setField(
-                                                                        'diaChiId',
-                                                                        address.id
-                                                                    );
-                                                                    setField(
-                                                                        'diaChiSnapshot',
-                                                                        address.diaChi
-                                                                    );
-                                                                    setField(
-                                                                        'lat',
-                                                                        address.lat
-                                                                    );
-                                                                    setField(
-                                                                        'lng',
-                                                                        address.lng
-                                                                    );
+                                                            )
+                                                            .map((address) => (
+                                                                <button
+                                                                    key={address.id}
+                                                                    type="button"
+                                                                    className="address-card"
+                                                                    onClick={() => {
+                                                                        setField(
+                                                                            'diaChiId',
+                                                                            address.id
+                                                                        );
+                                                                        setField(
+                                                                            'diaChiSnapshot',
+                                                                            address.fullAddress
+                                                                        );
+                                                                        setField(
+                                                                            'lat',
+                                                                            address.lat
+                                                                        );
+                                                                        setField(
+                                                                            'lng',
+                                                                            address.lng
+                                                                        );
 
-                                                                    setSuggestions([]);
-                                                                    setShowSuggestions(false);
+                                                                        setSuggestions([]);
+                                                                        setShowSuggestions(false);
 
-                                                                    // Chọn xong thì thu danh sách
-                                                                    setShowOtherAddresses(false);
-                                                                }}
-                                                            >
-                                                                <div className="address-card-content">
-                                                                    <div className="address-card-title">
-                                                                        <strong>
-                                                                            {address.tenGoi}
-                                                                        </strong>
+                                                                        // Chọn xong thì thu danh sách
+                                                                        setShowOtherAddresses(false);
+                                                                    }}
+                                                                >
+                                                                    <div className="address-card-content">
+                                                                        <div className="address-card-title">
+                                                                            <strong>
+                                                                                {address.label}
+                                                                            </strong>
+                                                                        </div>
+
+                                                                        <p>
+                                                                            {address.fullAddress}
+                                                                        </p>
                                                                     </div>
-
-                                                                    <p>
-                                                                        {address.diaChi}
-                                                                    </p>
-                                                                </div>
-                                                            </button>
-                                                        ))}
+                                                                </button>
+                                                            ))}
                                                 </div>
                                             )}
                                         </>
@@ -639,8 +641,8 @@ export default function CreateRequestPage() {
                             <h2>Bạn muốn thợ đến khi nào?</h2>
                             <div role="radiogroup" aria-label="Thời gian mong muốn">
                                 {[
-                                    ['NGAY_LAP_TUC', 'Ngay lập tức', 'Hệ thống tìm thợ gần nhất ngay bây giờ.'],
-                                    ['HEN_GIO', 'Hẹn giờ cụ thể', 'Chọn ngày và giờ bạn tiện.'],
+                                    ['ASAP', 'Ngay lập tức', 'Hệ thống tìm thợ gần nhất ngay bây giờ.'],
+                                    ['SCHEDULED', 'Hẹn giờ cụ thể', 'Chọn ngày và giờ bạn tiện.'],
                                 ].map(([v, title, desc]) => (
                                     <button
                                         key={v}
@@ -655,7 +657,7 @@ export default function CreateRequestPage() {
                                     </button>
                                 ))}
                             </div>
-                            {form.loaiThoiGian === 'HEN_GIO' && (
+                            {form.loaiThoiGian === 'SCHEDULED' && (
                                 <>
                                     <label className="label" htmlFor="hen">Ngày giờ hẹn</label>
                                     <input
@@ -685,7 +687,7 @@ export default function CreateRequestPage() {
                                 </div>
                                 <div>
                                     <dt>Mức độ</dt>
-                                    <dd>{form.mucDoUuTien === 'KHAN_CAP' ? 'Khẩn cấp' : 'Thường'}</dd>
+                                    <dd>{form.mucDoUuTien === 'URGENT' ? 'Khẩn cấp' : 'Thường'}</dd>
                                 </div>
                                 <div>
                                     <dt>Đính kèm</dt>
@@ -697,7 +699,7 @@ export default function CreateRequestPage() {
                                 </div>
                                 <div>
                                     <dt>Thời gian</dt>
-                                    <dd>{form.loaiThoiGian === 'HEN_GIO' ? formatHen(form.thoiGianHen) : 'Ngay lập tức'}</dd>
+                                    <dd>{form.loaiThoiGian === 'SCHEDULED' ? formatHen(form.thoiGianHen) : 'Ngay lập tức'}</dd>
                                 </div>
                             </dl>
                             <p className="hint">Bấm nút quay lại nếu cần sửa thông tin ở bước trước.</p>

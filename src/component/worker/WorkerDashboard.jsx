@@ -9,7 +9,7 @@ import { QuickMenu } from "./dashboard/QuickMenu";
 import { BottomNav } from "./dashboard/BottomNav";
 import { NotificationDropdown } from "./dashboard/NotificationDropdown";
 import { parseApiError } from "../../api/apiError";
-import { getMyProfile, updateAvailability } from "../../api/workerApi";
+import { getMyWorkerProfile, updateWorkerAvailability } from "../../api/workerApi";
 import { ApprovalPending } from "./dashboard/ApprovalPending";
 import { useNavigate } from "react-router-dom";
 
@@ -25,7 +25,7 @@ export default function WorkerDashboard() {
 
   useEffect(() => {
     let cancelled = false;
-    getMyProfile()
+    getMyWorkerProfile()
       .then((data) => {
         if (cancelled) return;
         if (!data) {
@@ -56,7 +56,7 @@ export default function WorkerDashboard() {
     setToggleError(null);
     try {
       const next = profile.availabilityStatus !== "READY";
-      const updated = await updateAvailability(next);
+      const updated = await updateWorkerAvailability(next);
       setProfile(updated);
     } catch (err) {
       const parsed = parseApiError(err);
@@ -67,7 +67,7 @@ export default function WorkerDashboard() {
         parsed.code === "WORKER_BUSY" ||
         parsed.code === "WORKER_NOT_APPROVED"
       ) {
-        const fresh = await getMyProfile().catch(() => null);
+        const fresh = await getMyWorkerProfile().catch(() => null);
         if (fresh) setProfile(fresh);
       }
     } finally {

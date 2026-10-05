@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import logoImg from "../../assets/logo.png";
 import { Navbar, Nav, Container, Button } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
-import { getAccessToken, logout } from "../../api/client.js";
+import { getAccessToken, logout } from "../../api/authApi";
 
 const NAV_ITEMS = [
   { name: "Về chúng tôi", href: "/worker#about" },

@@ -10,7 +10,8 @@ import {
 } from "react-bootstrap";
 import logoImg from "../../assets/logo.png"; // Điều chỉnh path logo của bạn
 import { Link, useNavigate } from "react-router-dom";
-import { getAccessToken, getStoredUser, logout } from "../../api/client.js";
+import { getAccessToken, getStoredUser, logout } from "../../api/authApi";
+import { DollarSign, Clock, MapPin, Shield } from "lucide-react";
 
 export default function LandingWorker() {
   const navigate = useNavigate();
@@ -163,28 +164,28 @@ export default function LandingWorker() {
               {
                 title: "Thu nhập hấp dẫn",
                 desc: "Nhận 100% thù lao ngay sau khi hoàn thành đơn hàng. Chiết khấu minh bạch.",
-                icon: "💰",
+                Icon: DollarSign,
               },
               {
                 title: "Chủ động thời gian",
                 desc: "Bật nhận việc khi rảnh, tắt khi bận. Bạn hoàn toàn làm chủ lịch trình.",
-                icon: "⏰",
+                Icon: Clock,
               },
               {
                 title: "Đơn hàng liên tục",
                 desc: "Hệ thống tự động điều phối đơn hàng gần vị trí của bạn nhất.",
-                icon: "📍",
+                Icon: MapPin,
               },
               {
                 title: "Hỗ trợ 24/7",
                 desc: "Đội ngũ hỗ trợ giải quyết sự cố, bảo hiểm tai nạn lao động khi tác nghiệp.",
-                icon: "🛡️",
+                Icon: Shield,
               },
             ].map((item, idx) => (
               <Col key={idx} md={6} lg={3}>
                 <Card className="border-0 shadow-sm rounded-4 h-100 p-3">
                   <Card.Body>
-                    <div className="fs-1 mb-3">{item.icon}</div>
+                    <div className="fs-1 mb-3 text-warning"><item.Icon size={32} /></div>
                     <h5 className="fw-bold text-dark mb-2">{item.title}</h5>
                     <p className="text-muted small mb-0">{item.desc}</p>
                   </Card.Body>

@@ -2,7 +2,7 @@ import {useState} from 'react';
 import {CheckCircle2, LogIn, UserPlus} from 'lucide-react';
 import {Link} from 'react-router-dom';
 import logoImg from '../assets/logo.png';
-import {login, register} from '../api/client.js';
+import {login, register, saveSession} from '../api/authApi';
 
 export default function AuthPage({onAuthenticated}) {
     const [mode, setMode] = useState('login');
@@ -20,9 +20,10 @@ export default function AuthPage({onAuthenticated}) {
         setError('');
         try {
             const data = mode === 'login'
-                ? {taiKhoan: form.taiKhoan, matKhau: form.matKhau}
-                : {hoTen: form.hoTen, email: form.email, soDienThoai: form.soDienThoai, matKhau: form.matKhau};
+                ? {account: form.taiKhoan, password: form.matKhau}
+                : {fullName: form.hoTen, email: form.email, phoneNumber: form.soDienThoai, password: form.matKhau};
             const res = mode === 'login' ? await login(data) : await register(data);
+            saveSession(res);
             onAuthenticated(res.user);
         } catch (err) {
             setError(err.message);
@@ -34,7 +35,7 @@ export default function AuthPage({onAuthenticated}) {
     return <div className="customer-ui auth-page">
         <div className="auth-topbar">
             <Link to="/" className="auth-back">← Về trang chủ</Link>
-            <span>Hỗ trợ khách hàng • Vua Thợ</span>
+            <span>Hỗ trợ khách hàng • Thợ Nhà</span>
         </div>
         <main className="shell auth-shell">
             <div className="auth-brand">

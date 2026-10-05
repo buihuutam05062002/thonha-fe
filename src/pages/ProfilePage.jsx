@@ -1,18 +1,10 @@
 import {useEffect, useState, useCallback, useRef} from 'react';
 import {ArrowLeft, Home, LogOut, MapPin, Plus, Save, Trash2, UserCircle} from 'lucide-react';
-import {
-    autocompleteAddress,
-    getPlaceDetail,
-    createAddress,
-    deleteAddress,
-    getAddresses,
-    getMe,
-    logout,
-    setDefaultAddress,
-    updateMe
-} from '../api/client.js';
+import {getMe, updateProfile as updateMe, logout} from '../api/authApi';
+import {getAddresses, createAddress, deleteAddress, setDefaultAddress} from '../api/addressApi';
+import {autocompleteAddress, getPlaceDetail} from '../api/mapApi';
 
-const emptyAddress = {tenGoi: '', diaChi: '', lat: '', lng: '', macDinh: false};
+const emptyAddress = {label: '', fullAddress: '', lat: '', lng: '', defaultAddress: false};
 export default function ProfilePage({onBack, onLoggedOut}) {
     const [user, setUser] = useState(null);
     const [addresses, setAddresses] = useState([]);
@@ -82,7 +74,7 @@ export default function ProfilePage({onBack, onLoggedOut}) {
     }
 
     function onAddressType(value) {
-        setAddress((a) => ({...a, diaChi: value, lat: '', lng: ''}));
+        setAddress((a) => ({...a, fullAddress: value, lat: '', lng: ''}));
         clearTimeout(debounceRef.current);
         if (value.trim().length < 3) {
             setSuggestions([]);
@@ -100,7 +92,7 @@ export default function ProfilePage({onBack, onLoggedOut}) {
 
     async function pickSuggestion(s) {
         setShowSuggestions(false);
-        setAddress((a) => ({...a, diaChi: s.moTa}));
+        setAddress((a) => ({...a, fullAddress: s.moTa}));
         try {
             const detail = await getPlaceDetail(s.placeId);
             setAddress((a) => ({...a, lat: detail.lat, lng: detail.lng}));
@@ -164,10 +156,10 @@ export default function ProfilePage({onBack, onLoggedOut}) {
                 </form>
                 <div className="section-title"><b>Địa chỉ đã lưu</b><span>{addresses.length} địa chỉ</span></div>
                 <div className="address-list">{addresses.map(a => <div className="address-card" key={a.id}><span
-                    className="address-icon">{a.macDinh ? <Home size={20}/> : <MapPin size={20}/>}</span>
-                    <div className="address-main"><b>{a.tenGoi} {a.macDinh &&
-                        <span className="default-badge">Mặc định</span>}</b><span>{a.diaChi}</span>
-                        <div className="address-actions">{!a.macDinh &&
+                    className="address-icon">{a.defaultAddress ? <Home size={20}/> : <MapPin size={20}/>}</span>
+                    <div className="address-main"><b>{a.label} {a.defaultAddress &&
+                        <span className="default-badge">Mặc định</span>}</b><span>{a.fullAddress}</span>
+                        <div className="address-actions">{!a.defaultAddress &&
                             <button onClick={() => makeDefault(a.id)}>Đặt mặc định</button>}
                             <button onClick={() => removeAddress(a.id)}><Trash2 size={14}/> Xóa</button>
                         </div>
@@ -178,14 +170,14 @@ export default function ProfilePage({onBack, onLoggedOut}) {
                         setError('');
                     }}><Plus size={18}/>Thêm địa chỉ mới</button> :
                     <form className="address-form" onSubmit={addAddress}><h3>Thêm địa chỉ</h3><label className="label">Tên
-                        gọi<input className="input" value={address.tenGoi}
-                                  onChange={e => setAddress({...address, tenGoi: e.target.value})}
+                        gọi<input className="input" value={address.label}
+                                  onChange={e => setAddress({...address, label: e.target.value})}
                                   placeholder="Nhà riêng" required/></label><label className="label">
                         Địa chỉ
                         <div style={{position: 'relative'}}>
                             <input
                                 className="input"
-                                value={address.diaChi}
+                                value={address.fullAddress}
                                 onChange={(e) => onAddressType(e.target.value)}
                                 onFocus={() => suggestions.length && setShowSuggestions(true)}
                                 onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
@@ -208,10 +200,10 @@ export default function ProfilePage({onBack, onLoggedOut}) {
                         </div>
                     </label>
                         <label className="check"><input type="checkbox"
-                                                        checked={address.macDinh}
+                                                        checked={address.defaultAddress}
                                                         onChange={e => setAddress({
                                                             ...address,
-                                                            macDinh: e.target.checked
+                                                            defaultAddress: e.target.checked
                                                         })}/> Đặt làm địa chỉ
                             mặc định</label>
                         <div className="inline-buttons">

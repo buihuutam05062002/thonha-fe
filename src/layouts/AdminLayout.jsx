@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
 import Sidebar from "../components/Sidebar/Sidebar";
-import { getStoredUser } from "../api/client.js";
+import { getStoredUser } from "../api/authApi";
 import "./AdminLayout.css";
 
 export default function AdminLayout() {

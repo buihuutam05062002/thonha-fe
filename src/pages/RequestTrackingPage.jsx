@@ -1,6 +1,6 @@
 import {ArrowLeft, RefreshCw} from 'lucide-react';
 import {useEffect, useRef, useState} from 'react';
-import {getRequestById} from '../api/client.js';
+import {getRepairRequestById} from '../api/repairRequestApi';
 
 const STAGES = ['CHO_GHEP_THO', 'DA_GHEP', 'DANG_DI_CHUYEN', 'DANG_SUA', 'HOAN_THANH'];
 const LABELS = {
@@ -31,7 +31,7 @@ export default function RequestTrackingPage({requestId, onBack, onCreateAnother}
 
     async function load(showSpinnerError = true) {
         try {
-            const data = await getRequestById(requestId);
+            const data = await getRepairRequestById(requestId);
             setYc(data);
             setError('');
             if (TERMINAL.includes(data.trangThai) && timerRef.current) {
