@@ -1,7 +1,7 @@
 import {Routes, Route, Link, useNavigate, useParams, Navigate} from 'react-router-dom';
-import CreateRequestPage from '../../pages/CreateRequestPage.jsx';
-import ProfilePage from '../../pages/ProfilePage.jsx';
-import RequestTrackingPage from '../../pages/RequestTrackingPage.jsx';
+import CreateRequestPage from '../../pages/customer/CreateRequestPage.jsx';
+import ProfilePage from '../../pages/customer/ProfilePage.jsx';
+import RequestTrackingPage from '../../pages/customer/RequestTrackingPage.jsx';
 import {getStoredUser, logout} from '../../api/authApi';
 import logoImg from '../../assets/logo.png';
 import {Zap, Droplet, Snowflake, Wrench, Settings, Zap as ZapIcon} from 'lucide-react';

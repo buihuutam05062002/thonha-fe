@@ -89,5 +89,28 @@ export async function updateWorkerAvailability(available) {
   return axiosClient.patch("/worker/availability", { available });
 }
 
+/**
+ * Dữ liệu tổng hợp cho dashboard: thống kê, yêu cầu đang chờ phản hồi, đơn gần đây, thu nhập 7 ngày.
+ * @returns {Promise<{summary:Object, incomingRequests:Array, recentOrders:Array, weeklyIncome:Array}>}
+ */
+export async function getWorkerDashboard() {
+  return axiosClient.get("/worker/dashboard");
+}
+
+/**
+ * Thợ chấp nhận / từ chối yêu cầu được hệ thống gửi tới.
+ * @param {number} requestId
+ * @param {number} matchingLogId
+ * @param {"ACCEPTED"|"REJECTED"} result
+ * @param {string} [note]
+ */
+export async function respondToMatching(requestId, matchingLogId, result, note) {
+  return axiosClient.post(`/repair-requests/${requestId}/matching-response`, {
+    matchingLogId,
+    result,
+    note,
+  });
+}
+
 // Alias for backward compatibility
 export const registerWorker = registerWorkerProfile;

@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import Sidebar from "../components/Sidebar/Sidebar";
+import Sidebar from "../components/admin/Sidebar/Sidebar";
 import { getStoredUser } from "../api/authApi";
 import "./AdminLayout.css";
 
