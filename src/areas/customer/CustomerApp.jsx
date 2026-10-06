@@ -15,7 +15,7 @@ function CustomerHeader({user}) {
         <div className="customer-navbar-inner">
             <Link className="customer-brand" to="/">
                 <img src={logoImg} alt="Vua Thợ"/>
-                <div><strong>Vua Thợ</strong><span>Sửa chữa tại nhà</span></div>
+                <div><strong>Thợ Nhà</strong><span>Sửa chữa tại nhà</span></div>
             </Link>
             <nav className="customer-nav">
                 <Link to="/">Trang chủ</Link>

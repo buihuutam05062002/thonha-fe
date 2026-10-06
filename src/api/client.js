@@ -107,16 +107,16 @@ export async function request(path, opt = {}, retry = true) {
 
 export async function getMe() {
     const x = await request('/api/v1/users/me');
-    return {...x, hoTen: x.fullName, anhDaiDien: x.avatarUrl, vaiTro: [...(x.roles || [])]}
+    return {...x, hoTen: x.fullName, anhDaiDien: x.avatarUrl, soDienThoai: x.phoneNumber, vaiTro: [...(x.roles || [])]}
 }
 
 export async function updateMe(data) {
     const x = await request('/api/v1/users/me', {
         method: 'PUT',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({fullName: data.hoTen, avatarUrl: data.anhDaiDien})
+        body: JSON.stringify({fullName: data.hoTen, avatarUrl: data.anhDaiDien, phoneNumber: data.soDienThoai})
     });
-    const out = {...x, hoTen: x.fullName, anhDaiDien: x.avatarUrl};
+    const out = {...x, hoTen: x.fullName, anhDaiDien: x.avatarUrl, soDienThoai: x.phoneNumber};
     localStorage.setItem('user', JSON.stringify({...getStoredUser(), ...out}));
     return out
 }
@@ -246,4 +246,29 @@ export async function getPlaceDetail(placeId) {
     const x = await request(`/api/v1/maps/place?placeId=${encodeURIComponent(placeId)}`);
     const loc = x.result?.geometry?.location;
     return {lat: loc?.lat ?? null, lng: loc?.lng ?? null}
+}
+
+export async function classifyIncident(description, files) {
+    const form = new FormData();
+    form.append('description', description || '');
+    (files || []).forEach((f) => form.append('files', f));
+    return request('/api/v1/ai/classify', {method: 'POST', body: form});
+    // trả về: {categoryId, categoryName, confidence, reason}; categoryId = null nếu AI không chắc/không khả dụng
+}
+
+export async function getReview(requestId) {
+    // 204 -> null (chưa đánh giá)
+    return request(`/api/v1/repair-requests/${requestId}/review`);
+}
+
+export async function createReview(requestId, rating, comment) {
+    return request(`/api/v1/repair-requests/${requestId}/review`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({rating, comment: comment || null})
+    });
+}
+
+export async function getMyWorkerReviews(page = 0, size = 10) {
+    return request(`/api/v1/worker/reviews?page=${page}&size=${size}`);
 }

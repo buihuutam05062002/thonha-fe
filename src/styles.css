@@ -92,21 +92,92 @@ button, input, textarea {
     cursor: pointer;
 }
 
-.progress {
+/* Bộ chỉ báo bước dạng vòng tròn + đường nối dùng chung cho "Tạo yêu cầu" (5 bước)
+   và "Theo dõi yêu cầu" (5 trạng thái). left/width của .stepper-track và .stepper-fill
+   được tính sẵn bằng JS (xem buildStepperStyle trong các trang dùng nó) để đường nối
+   luôn khớp chính xác tâm từng vòng tròn, bất kể độ rộng khung hay nhãn dài ngắn. */
+.stepper {
+    position: relative;
     display: flex;
-    gap: 6px;
-    margin: 8px 20px 6px;
+    margin: 10px 20px 4px;
 }
 
-.progress i {
-    flex: 1;
-    height: 5px;
-    border-radius: 3px;
+.stepper-track,
+.stepper-fill {
+    position: absolute;
+    top: 15px;
+    height: 2px;
+    z-index: 0;
+}
+
+.stepper-track {
     background: var(--line);
 }
 
-.progress i.on {
-    background: var(--navy);
+.stepper-fill {
+    background: var(--orange);
+    transition: width .3s ease;
+}
+
+.stepper-item {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+}
+
+.stepper-dot {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: #fff;
+    border: 2px solid var(--line);
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.stepper-item b {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.stepper-item.done .stepper-dot,
+.stepper-item.current .stepper-dot {
+    border-color: var(--orange);
+    background: var(--orange);
+    color: #fff;
+}
+
+.stepper-item.current .stepper-dot {
+    box-shadow: 0 0 0 4px var(--orange-soft);
+}
+
+.stepper-item.done b,
+.stepper-item.current b {
+    color: var(--navy);
+}
+
+.stepper-item.bad .stepper-dot {
+    border-color: var(--red);
+    background: var(--red);
+    color: #fff;
+}
+
+.stepper-item.bad b {
+    color: var(--red);
 }
 
 .step-no {
@@ -819,6 +890,26 @@ h2 {
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
+}
+
+.tracking-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tracking-card .stepper {
+    margin: 22px 0 4px;
+}
+
+.tracking-meta h2 {
+    margin: 10px 0 2px;
+}
+
+.tracking-map-wrap {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
 }
 
 .status-badge {

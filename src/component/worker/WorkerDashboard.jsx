@@ -3,6 +3,7 @@ import { Container, Spinner } from "react-bootstrap";
 import { Sidebar } from "./dashboard/Sidebar";
 import { HeaderDashboard } from "./dashboard/HeaderDashboard";
 import { ActiveStatusCard } from "./dashboard/ActiveStatusCard";
+import { ShareLocationCard } from "./dashboard/ShareLocationCard";
 import { OverviewStats } from "./dashboard/OverviewStats";
 import { RecentOrders } from "./dashboard/RecentOrders";
 import { QuickMenu } from "./dashboard/QuickMenu";
@@ -112,6 +113,7 @@ export default function WorkerDashboard() {
               error={toggleError}
               onToggle={handleToggle}
             />
+            <ShareLocationCard />
             <OverviewStats />
             <RecentOrders />
             <QuickMenu />

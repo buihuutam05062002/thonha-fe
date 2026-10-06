@@ -1,6 +1,10 @@
-import {ArrowLeft, RefreshCw} from 'lucide-react';
+import {ArrowLeft, Check, RefreshCw} from 'lucide-react';
 import {useEffect, useRef, useState} from 'react';
 import {getRequestById} from '../api/client.js';
+import TrackingMap from '../components/tracking/TrackingMap.jsx';
+import {stepperTrackStyle, stepperFillStyle} from '../lib/stepper.js';
+import ChatBox from '../components/chat/ChatBox.jsx';
+import ReviewSection from '../components/review/ReviewSection.jsx';
 
 const STAGES = ['CHO_GHEP_THO', 'DA_GHEP', 'DANG_DI_CHUYEN', 'DANG_SUA', 'HOAN_THANH'];
 const LABELS = {
@@ -23,6 +27,8 @@ const BADGE_TONE = {
 };
 const TERMINAL = ['HOAN_THANH', 'KHONG_TIM_THAY_THO', 'DA_HUY'];
 const POLL_MS = 6000;
+const MAP_STAGES = ['DA_GHEP', 'DANG_DI_CHUYEN'];
+const CHAT_STAGES = ['DA_GHEP', 'DANG_DI_CHUYEN', 'DANG_SUA', 'HOAN_THANH', 'DA_HUY'];
 
 export default function RequestTrackingPage({requestId, onBack, onCreateAnother}) {
     const [yc, setYc] = useState(null);
@@ -95,48 +101,69 @@ export default function RequestTrackingPage({requestId, onBack, onCreateAnother}
                 </header>
 
                 <div className="body">
-                    <span className={`status-badge ${BADGE_TONE[yc.trangThai]}`}>{LABELS[yc.trangThai]}</span>
-                    <h2 style={{margin: '10px 0 2px'}}>{yc.danhMuc}</h2>
-                    <p className="muted" style={{margin: 0}}>{yc.diaChi}</p>
-
-                    {isTerminalBad ? (
-                        <div className="notice">
-                            <p>
-                                {yc.trangThai === 'KHONG_TIM_THAY_THO'
-                                    ? 'Hiện chưa có thợ nào sẵn sàng gần bạn. Bạn có thể thử tạo lại yêu cầu sau ít phút.'
-                                    : 'Yêu cầu này đã được huỷ.'}
-                            </p>
+                    <section className="tracking-card">
+                        <div className="tracking-meta">
+                            <div>
+                                <span className={`status-badge ${BADGE_TONE[yc.trangThai]}`}>{LABELS[yc.trangThai]}</span>
+                                <h2>{yc.danhMuc}</h2>
+                                <p className="muted" style={{margin: 0}}>{yc.diaChi}</p>
+                            </div>
                         </div>
-                    ) : (
-                        <ol className="timeline" aria-label="Tiến trình yêu cầu">
-                            {STAGES.map((s, i) => (
-                                <li key={s} className={i < stageIndex ? 'done' : i === stageIndex ? 'current' : ''}>
-                                    {LABELS[s]}
-                                </li>
-                            ))}
-                        </ol>
-                    )}
 
-                    {yc.dinhKemUrls?.length > 0 && (
-                        <>
-                            <p className="section-title" style={{marginTop: 20}}><span>Hình ảnh đã gửi</span></p>
-                            <div className="media-grid">
-                                {yc.dinhKemUrls.map((url) => (
-                                    <div className="thumb" key={url}>
-                                        <img src={url} alt="Ảnh sự cố đã gửi"/>
+                        {isTerminalBad ? (
+                            <div className="notice" style={{marginTop: 20}}>
+                                <p>
+                                    {yc.trangThai === 'KHONG_TIM_THAY_THO'
+                                        ? 'Hiện chưa có thợ nào sẵn sàng gần bạn. Bạn có thể thử tạo lại yêu cầu sau ít phút.'
+                                        : 'Yêu cầu này đã được huỷ.'}
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="stepper" role="img" aria-label={`Trạng thái: ${LABELS[yc.trangThai]}`}>
+                                <div className="stepper-track" style={stepperTrackStyle(STAGES.length)}/>
+                                <div className="stepper-fill" style={stepperFillStyle(STAGES.length, stageIndex)}/>
+                                {STAGES.map((s, i) => (
+                                    <div key={s} className={`stepper-item${i < stageIndex ? ' done' : i === stageIndex ? ' current' : ''}`}>
+                                        <span className="stepper-dot">{i < stageIndex ? <Check size={14} aria-hidden="true"/> : i + 1}</span>
+                                        <b>{LABELS[s]}</b>
                                     </div>
                                 ))}
                             </div>
-                        </>
-                    )}
+                        )}
 
-                    {!TERMINAL.includes(yc.trangThai) && (
-                        <button type="button" className="btn secondary small" style={{marginTop: 20}}
-                                onClick={() => load()}>
-                            <RefreshCw size={16} aria-hidden="true" style={{marginRight: 6}}/>
-                            Cập nhật ngay
-                        </button>
-                    )}
+                        {MAP_STAGES.includes(yc.trangThai) && (
+                            <div className="tracking-map-wrap">
+                                {yc.lat != null && yc.lng != null
+                                    ? <TrackingMap requestId={requestId} destLat={Number(yc.lat)} destLng={Number(yc.lng)}/>
+                                    : <div className="notice"><p>Yêu cầu chưa có toạ độ nên chưa hiển thị được bản đồ.</p></div>}
+                            </div>
+                        )}
+
+                        {yc.trangThai === 'HOAN_THANH' && <ReviewSection requestId={requestId}/>}
+
+                        {CHAT_STAGES.includes(yc.trangThai) && <ChatBox requestId={requestId}/>}
+
+                        {yc.dinhKemUrls?.length > 0 && (
+                            <div className="tracking-map-wrap">
+                                <p className="section-title"><span>Hình ảnh đã gửi</span></p>
+                                <div className="media-grid">
+                                    {yc.dinhKemUrls.map((url) => (
+                                        <div className="thumb" key={url}>
+                                            <img src={url} alt="Ảnh sự cố đã gửi"/>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {!TERMINAL.includes(yc.trangThai) && (
+                            <button type="button" className="btn secondary small" style={{marginTop: 20, alignSelf: 'flex-start'}}
+                                    onClick={() => load()}>
+                                <RefreshCw size={16} aria-hidden="true" style={{marginRight: 6}}/>
+                                Cập nhật ngay
+                            </button>
+                        )}
+                    </section>
                 </div>
 
                 <div className="footer">

@@ -2,7 +2,8 @@ import {useCallback, useEffect, useRef, useState} from 'react';
 import {
     ArrowLeft, Camera, Check, Droplet, Refrigerator, WashingMachine, Wind, Wrench, X, Zap,
 } from 'lucide-react';
-import {createRequest, getCategories, getAddresses} from '../api/client.js';
+import {stepperTrackStyle, stepperFillStyle} from '../lib/stepper.js';
+import {createRequest, getCategories, getAddresses, classifyIncident} from '../api/client.js';
 import {autocompleteAddress, getPlaceDetail} from "../api/client.js";
 import RequestTrackingPage from './RequestTrackingPage.jsx';
 import logoImg from '../assets/logo.png';
@@ -22,8 +23,8 @@ const MAX_VIDEOS = 1;
 const MAX_IMAGE_MB = 5;
 const MAX_VIDEO_MB = 30;
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'video/mp4'];
-const TOTAL_STEPS = 5; // SRS mục 4: tạo yêu cầu không quá 5 bước
-const STEP_LABELS = ['Dịch vụ', 'Sự cố', 'Địa chỉ', 'Thời gian', 'Xác nhận'];
+const TOTAL_STEPS = 4;
+const STEP_LABELS = ['Dịch vụ', 'Sự cố', 'Địa chỉ', 'Xác nhận'];
 
 const EMPTY_FORM = {
     danhMucId: null,
@@ -33,19 +34,7 @@ const EMPTY_FORM = {
     diaChiSnapshot: '',
     lat: null,
     lng: null,
-    loaiThoiGian: 'NGAY_LAP_TUC',
-    thoiGianHen: '',
 };
-
-function localNowValue() {
-    const d = new Date();
-    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-    return d.toISOString().slice(0, 16);
-}
-
-function formatHen(value) {
-    return new Date(value).toLocaleString('vi-VN', {dateStyle: 'medium', timeStyle: 'short'});
-}
 
 export default function CreateRequestPage() {
     const [step, setStep] = useState(1);
@@ -57,6 +46,8 @@ export default function CreateRequestPage() {
     const [error, setError] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [result, setResult] = useState(null);
+    const [aiState, setAiState] = useState('idle'); // idle | loading | done | error
+    const [aiResult, setAiResult] = useState(null);
 
     const [suggestions, setSuggestions] = useState([]);
     // const [addressQuery, setAddressQuery] = useState('');
@@ -172,6 +163,18 @@ export default function CreateRequestPage() {
         setMediaError([...errs].join('. '));
     }
 
+    async function suggestCategory() {
+        setAiState('loading');
+        setAiResult(null);
+        try {
+            const images = media.filter((m) => !m.isVideo).slice(0, 3).map((m) => m.file);
+            setAiResult(await classifyIncident(form.moTa, images));
+            setAiState('done');
+        } catch {
+            setAiState('error');
+        }
+    }
+
     function removeMedia(id) {
         setMedia((list) => {
             const target = list.find((m) => m.id === id);
@@ -185,10 +188,6 @@ export default function CreateRequestPage() {
         if (n === 1 && !form.danhMucId) return 'Vui lòng chọn danh mục dịch vụ';
         if (n === 2 && form.moTa.trim().length < 10) return 'Mô tả cần ít nhất 10 ký tự để thợ hiểu sự cố';
         if (n === 3 && !form.diaChiSnapshot.trim()) return 'Vui lòng nhập địa chỉ cần sửa';
-        if (n === 4 && form.loaiThoiGian === 'HEN_GIO') {
-            if (!form.thoiGianHen) return 'Vui lòng chọn ngày giờ hẹn';
-            if (new Date(form.thoiGianHen) <= new Date()) return 'Thời gian hẹn phải ở tương lai';
-        }
         return '';
     }
 
@@ -208,7 +207,7 @@ export default function CreateRequestPage() {
     }
 
     async function submit() {
-        for (let n = 1; n <= 4; n += 1) {
+        for (let n = 1; n <= 3; n += 1) {
             const e = validate(n);
             if (e) {
                 setStep(n);
@@ -227,8 +226,8 @@ export default function CreateRequestPage() {
                 diaChiSnapshot: form.diaChiSnapshot.trim(),
                 lat: form.lat,
                 lng: form.lng,
-                loaiThoiGian: form.loaiThoiGian,
-                thoiGianHen: form.loaiThoiGian === 'HEN_GIO' ? form.thoiGianHen : null,
+                loaiThoiGian: 'NGAY_LAP_TUC',
+                thoiGianHen: null,
             };
             const res = await createRequest(data, media.map((m) => m.file));
             setResult(res);
@@ -315,10 +314,12 @@ export default function CreateRequestPage() {
                     <div className="request-topbar-step">Bước <strong>{step}</strong>/{TOTAL_STEPS}</div>
                 </header>
 
-                <div className="progress request-progress" role="img" aria-label={`Bước ${step} trên ${TOTAL_STEPS}`}>
+                <div className="stepper request-progress" role="img" aria-label={`Bước ${step} trên ${TOTAL_STEPS}`}>
+                    <div className="stepper-track" style={stepperTrackStyle(TOTAL_STEPS)}/>
+                    <div className="stepper-fill" style={stepperFillStyle(TOTAL_STEPS, step - 1)}/>
                     {STEP_LABELS.map((label, i) => (
-                        <div key={label} className={`progress-step${i < step ? ' on' : ''}${i === step - 1 ? ' current' : ''}`}>
-                            <span>{i + 1}</span>
+                        <div key={label} className={`stepper-item${i < step - 1 ? ' done' : ''}${i === step - 1 ? ' current' : ''}`}>
+                            <span className="stepper-dot">{i < step - 1 ? <Check size={14} aria-hidden="true"/> : i + 1}</span>
                             <b>{label}</b>
                         </div>
                     ))}
@@ -408,6 +409,30 @@ export default function CreateRequestPage() {
                             <p className="hint">Tối đa {MAX_IMAGES} ảnh (mỗi ảnh {MAX_IMAGE_MB} MB)
                                 và {MAX_VIDEOS} video MP4 ({MAX_VIDEO_MB} MB).</p>
                             {mediaError && <p className="error" role="alert">{mediaError}</p>}
+
+                            <div className="ai-suggest">
+                                <button
+                                    type="button"
+                                    className="btn secondary small"
+                                    onClick={suggestCategory}
+                                    disabled={aiState === 'loading' || (form.moTa.trim().length < 5 && media.length === 0)}
+                                >
+                                    {aiState === 'loading' ? 'AI đang phân tích...' : 'Gợi ý danh mục bằng AI'}
+                                </button>
+                                {aiState === 'error' && (
+                                    <p className="error" role="alert">Không gọi được AI, bạn có thể chọn danh mục thủ công ở bước 1.</p>
+                                )}
+                                {aiState === 'done' && aiResult && (aiResult.categoryId ? (
+                                    <p className="hint">
+                                        AI gợi ý: <strong>{aiResult.categoryName}</strong> ({Math.round(aiResult.confidence * 100)}%) — {aiResult.reason}{' '}
+                                        {form.danhMucId === aiResult.categoryId
+                                            ? <em>Đã chọn.</em>
+                                            : <button type="button"    className="btn primary small" onClick={() => setField('danhMucId', aiResult.categoryId)}>Áp dụng</button>}
+                                    </p>
+                                ) : (
+                                    <p className="hint">{aiResult.reason || 'AI chưa đủ thông tin để gợi ý.'}</p>
+                                ))}
+                            </div>
 
                             <span className="label">Mức độ</span>
                             <div className="chips" role="radiogroup" aria-label="Mức độ ưu tiên">
@@ -636,43 +661,6 @@ export default function CreateRequestPage() {
 
                     {step === 4 && (
                         <section>
-                            <h2>Bạn muốn thợ đến khi nào?</h2>
-                            <div role="radiogroup" aria-label="Thời gian mong muốn">
-                                {[
-                                    ['NGAY_LAP_TUC', 'Ngay lập tức', 'Hệ thống tìm thợ gần nhất ngay bây giờ.'],
-                                    ['HEN_GIO', 'Hẹn giờ cụ thể', 'Chọn ngày và giờ bạn tiện.'],
-                                ].map(([v, title, desc]) => (
-                                    <button
-                                        key={v}
-                                        type="button"
-                                        role="radio"
-                                        aria-checked={form.loaiThoiGian === v}
-                                        className={`opt${form.loaiThoiGian === v ? ' sel' : ''}`}
-                                        onClick={() => setField('loaiThoiGian', v)}
-                                    >
-                                        <span className="radio" aria-hidden="true"/>
-                                        <span><b>{title}</b><span className="desc">{desc}</span></span>
-                                    </button>
-                                ))}
-                            </div>
-                            {form.loaiThoiGian === 'HEN_GIO' && (
-                                <>
-                                    <label className="label" htmlFor="hen">Ngày giờ hẹn</label>
-                                    <input
-                                        id="hen"
-                                        className="input"
-                                        type="datetime-local"
-                                        min={localNowValue()}
-                                        value={form.thoiGianHen}
-                                        onChange={(e) => setField('thoiGianHen', e.target.value)}
-                                    />
-                                </>
-                            )}
-                        </section>
-                    )}
-
-                    {step === 5 && (
-                        <section>
                             <h2>Kiểm tra lại yêu cầu</h2>
                             <dl className="summary">
                                 <div>
@@ -697,7 +685,7 @@ export default function CreateRequestPage() {
                                 </div>
                                 <div>
                                     <dt>Thời gian</dt>
-                                    <dd>{form.loaiThoiGian === 'HEN_GIO' ? formatHen(form.thoiGianHen) : 'Ngay lập tức'}</dd>
+                                    <dd>Ngay lập tức</dd>
                                 </div>
                             </dl>
                             <p className="hint">Bấm nút quay lại nếu cần sửa thông tin ở bước trước.</p>

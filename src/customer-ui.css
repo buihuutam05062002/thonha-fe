@@ -368,6 +368,79 @@
   padding: 0 38px;
 }
 
+/* Bộ chỉ báo bước (vòng tròn + đường nối) dùng chung cho "Tạo yêu cầu" (5 bước) và
+   "Theo dõi yêu cầu" (5 trạng thái). left/width của phần track & fill được tính sẵn
+   bằng JS nên luôn khớp chính xác tâm từng vòng tròn ở mọi độ rộng màn hình. */
+.customer-ui .stepper {
+  max-width: 1040px;
+  margin: 24px auto 6px;
+  padding: 0 38px;
+}
+
+.customer-ui .stepper-dot {
+  width: 34px;
+  height: 34px;
+  font-size: 13px;
+  border-width: 2px;
+}
+
+.customer-ui .stepper-item b {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+.customer-ui .stepper-item.done b,
+.customer-ui .stepper-item.current b {
+  color: var(--customer-dark);
+}
+
+.customer-ui .stepper-item.done .stepper-dot,
+.customer-ui .stepper-item.current .stepper-dot {
+  border-color: var(--customer-orange);
+  background: var(--customer-orange);
+}
+
+.customer-ui .stepper-fill {
+  background: var(--customer-orange);
+}
+
+.customer-ui .stepper-item.bad .stepper-dot {
+  border-color: #dc2626;
+  background: #dc2626;
+}
+
+.customer-ui .stepper-item.bad b { color: #dc2626; }
+
+/* Card "Theo dõi yêu cầu": cùng kiểu thẻ bo góc + đổ bóng với các bước tạo yêu cầu. */
+.customer-ui .tracking-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.customer-ui .tracking-card .stepper {
+  margin: 28px 0 8px;
+  padding: 0;
+}
+
+.customer-ui .tracking-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px 20px;
+  margin-top: 4px;
+}
+
+.customer-ui .tracking-meta h2 { margin: 0; }
+
+.customer-ui .tracking-map-wrap {
+  margin-top: 28px;
+  padding-top: 28px;
+  border-top: 1px solid var(--customer-line);
+}
+
 .customer-ui .tiles {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
@@ -573,9 +646,9 @@
   min-height: 100vh;
   padding: 84px 24px 48px;
   background:
-    radial-gradient(circle at 8% 12%, rgba(245,130,13,.12), transparent 28%),
-    radial-gradient(circle at 92% 82%, rgba(30,41,59,.08), transparent 30%),
-    linear-gradient(135deg, #fffaf5 0%, #f8fafc 52%, #fff 100%);
+          radial-gradient(circle at 8% 12%, rgba(245,130,13,.12), transparent 28%),
+          radial-gradient(circle at 92% 82%, rgba(30,41,59,.08), transparent 30%),
+          linear-gradient(135deg, #fffaf5 0%, #f8fafc 52%, #fff 100%);
 }
 
 .customer-ui .auth-topbar {
@@ -615,8 +688,8 @@
   padding: 52px 52px 46px;
   overflow: hidden;
   background:
-    radial-gradient(circle at 80% 15%, rgba(245,130,13,.20), transparent 30%),
-    linear-gradient(150deg, #1e293b 0%, #172033 100%);
+          radial-gradient(circle at 80% 15%, rgba(245,130,13,.20), transparent 30%),
+          linear-gradient(150deg, #1e293b 0%, #172033 100%);
 }
 
 .customer-ui .auth-brand::after {
@@ -794,68 +867,6 @@
   white-space: nowrap;
 }
 
-.customer-ui .request-progress {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 10px;
-  max-width: 1040px;
-  margin: 24px auto 10px;
-  padding: 0 38px;
-}
-
-.customer-ui .progress-step {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  color: #94a3b8;
-  min-width: 0;
-}
-
-.customer-ui .progress-step::after {
-  content: '';
-  position: absolute;
-  left: 32px;
-  right: -10px;
-  top: 15px;
-  height: 2px;
-  background: #e2e8f0;
-  z-index: 0;
-}
-
-.customer-ui .progress-step:last-child::after { display: none; }
-
-.customer-ui .progress-step span {
-  position: relative;
-  z-index: 1;
-  width: 30px;
-  height: 30px;
-  display: grid;
-  place-items: center;
-  flex: 0 0 auto;
-  border-radius: 50%;
-  border: 2px solid #e2e8f0;
-  background: #fff;
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.customer-ui .progress-step b {
-  position: relative;
-  z-index: 1;
-  font-size: 12px;
-  white-space: nowrap;
-}
-
-.customer-ui .progress-step.on { color: var(--customer-orange); }
-.customer-ui .progress-step.on::after { background: #fdba74; }
-.customer-ui .progress-step.on span {
-  border-color: var(--customer-orange);
-  background: var(--customer-orange);
-  color: #fff;
-}
-.customer-ui .progress-step.current b { color: var(--customer-dark); }
-
 .customer-ui .step-no {
   color: #64748b;
   font-size: 13px;
@@ -986,7 +997,7 @@
   .customer-ui .auth-brand { padding: 36px; }
   .customer-ui .auth-body { padding: 36px; }
   .customer-ui .request-topbar { padding: 14px 22px; }
-  .customer-ui .request-progress { padding: 0 22px; }
+  .customer-ui .stepper { padding: 0 22px; }
   .customer-ui .body > section { padding: 26px 24px 30px; }
   .customer-ui .summary { grid-template-columns: 1fr; }
 }
@@ -1005,9 +1016,8 @@
   .customer-ui .request-topbar-left > div > span { display: none; }
   .customer-ui .request-topbar h1 { font-size: 18px; }
   .customer-ui .request-topbar-step { padding: 7px 10px; font-size: 12px; }
-  .customer-ui .request-progress { grid-template-columns: repeat(5, 30px); justify-content: space-between; padding: 0 18px; }
-  .customer-ui .progress-step b,
-  .customer-ui .progress-step::after { display: none; }
+  .customer-ui .stepper { margin: 10px 18px 4px; padding: 0; }
+  .customer-ui .stepper-item b { display: none; }
   .customer-ui .body > section { border-radius: 0; border-left: 0; border-right: 0; box-shadow: none; padding: 24px 18px; }
   .customer-ui .footer { padding: 16px 18px 20px; }
 }
@@ -1111,34 +1121,6 @@
   font-weight: 900;
 }
 
-/* Request stepper: never clip the Vietnamese step labels on desktop. */
-.customer-ui .request-progress {
-  width: min(1120px, calc(100% - 64px));
-  max-width: none;
-  grid-template-columns: repeat(5, minmax(125px, 1fr));
-  gap: 0;
-  overflow: visible;
-  padding: 0;
-}
-
-.customer-ui .progress-step {
-  min-width: 0;
-  overflow: visible;
-}
-
-.customer-ui .progress-step b {
-  display: block;
-  white-space: nowrap;
-  overflow: visible;
-  font-size: 13px;
-  line-height: 1.2;
-}
-
-.customer-ui .progress-step::after {
-  left: 39px;
-  right: 8px;
-}
-
 @media (max-width: 991.98px) {
   .worker-landing-navbar-inner,
   .worker-register-navbar-inner {
@@ -1164,12 +1146,81 @@
     height: 42px !important;
     max-width: 160px;
   }
+}
 
-  .customer-ui .request-progress {
-    width: calc(100% - 36px);
-    grid-template-columns: repeat(5, 30px);
-    justify-content: space-between;
-    padding: 0;
-    overflow: visible;
-  }
+/* ===== Dán xuống CUỐI frontend/src/customer-ui.css (nếu đã dán file profile-buttons.css trước đó thì XÓA khối cũ đi) =====
+
+   Nguyên nhân nút bị lệch: main.jsx nạp bootstrap.min.css SAU styles.css, nên .btn của Bootstrap
+   (display:inline-block, padding, line-height 1.5...) đè lên .btn của khu khách hàng (display:flex).
+   Icon và chữ vì vậy không còn nằm cùng một hàng. Selector ".customer-ui .btn" đặc hiệu hơn nên thắng. */
+
+.customer-ui .btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 50px;
+  padding: 0 16px;
+  line-height: 1.2;
+  font-weight: 700;
+  border-width: 1.5px;
+  border-style: solid;
+  border-radius: 14px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.customer-ui .btn svg {
+  flex: none;
+}
+
+/* Giữ kích thước của nút nhỏ (đã bị rule trên ghi đè nếu thiếu dòng này) */
+.customer-ui .btn.small {
+  width: auto;
+  height: 38px;
+  padding: 0 16px;
+  font-size: 14px;
+}
+
+/* Bootstrap có :hover riêng dùng biến chưa định nghĩa -> nền nút có thể biến mất khi rê chuột. Đặt lại rõ ràng. */
+.customer-ui .btn.primary:hover,
+.customer-ui .btn.primary:active {
+  background: var(--customer-orange);
+  border-color: var(--customer-orange);
+  color: #fff;
+  filter: brightness(0.95);
+}
+
+.customer-ui .btn.secondary:hover,
+.customer-ui .btn.secondary:active {
+  background: #fff;
+  border-color: var(--customer-line, #e3e7ee);
+  color: var(--customer-dark);
+  filter: brightness(0.97);
+}
+
+.customer-ui .btn.danger:hover,
+.customer-ui .btn.danger:active {
+  background: #fff;
+  border-color: #f0c9c9;
+  color: var(--red);
+  filter: brightness(0.97);
+}
+
+/* Khoảng cách giữa các nút ở trang hồ sơ */
+.customer-ui .profile-body form > .btn,
+.customer-ui .profile-body > .btn {
+  margin-top: 18px;
+}
+
+.customer-ui .profile-body .address-list + .btn {
+  margin-top: 14px;
+}
+
+/* "Đặt mặc định" / "Xóa" xuống dòng gọn trên màn hình hẹp */
+.customer-ui .address-actions {
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
 }

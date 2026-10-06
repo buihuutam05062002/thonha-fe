@@ -18,6 +18,7 @@ export default function ProfilePage({onBack, onLoggedOut}) {
     const [addresses, setAddresses] = useState([]);
     const [name, setName] = useState('');
     const [avatar, setAvatar] = useState('');
+    const [phone, setPhone] = useState('');
     const [address, setAddress] = useState(emptyAddress);
     const [showAddress, setShowAddress] = useState(false);
     const [error, setError] = useState('');
@@ -35,6 +36,7 @@ export default function ProfilePage({onBack, onLoggedOut}) {
             setUser(u);
             setName(u.hoTen || '');
             setAvatar(u.anhDaiDien || '');
+            setPhone(u.soDienThoai || '');
             setAddresses(a);
         } catch (e) {
             setError(e.message);
@@ -51,9 +53,16 @@ export default function ProfilePage({onBack, onLoggedOut}) {
         e.preventDefault();
         setSaving(true);
         setError('');
+        const phoneTrimmed = phone.trim();
+        if (phoneTrimmed && !/^0\d{9,10}$/.test(phoneTrimmed)) {
+            setError('Số điện thoại không hợp lệ (bắt đầu bằng 0, gồm 10–11 số)');
+            setSaving(false);
+            return;
+        }
         try {
-            const u = await updateMe({hoTen: name, anhDaiDien: avatar});
+            const u = await updateMe({hoTen: name, anhDaiDien: avatar, soDienThoai: phoneTrimmed});
             setUser(u);
+            setPhone(u.soDienThoai || '');
         } catch (e) {
             setError(e.message);
         } finally {
@@ -154,7 +163,8 @@ export default function ProfilePage({onBack, onLoggedOut}) {
                                                                                required maxLength={100}/></label><label
                     className="label">Email<input className="input" value={user?.email || 'Chưa cập nhật'}
                                                   readOnly/></label><label className="label">Số điện thoại<input
-                    className="input" value={user?.soDienThoai || 'Chưa cập nhật'} readOnly/></label><label
+                    className="input" type="tel" inputMode="tel" value={phone}
+                    onChange={e => setPhone(e.target.value)} placeholder="Ví dụ: 0912345678" maxLength={11}/></label><label
                     className="label">Ảnh đại diện (URL)<input className="input" value={avatar}
                                                                onChange={e => setAvatar(e.target.value)}
                                                                placeholder="https://..."/></label>{error &&
