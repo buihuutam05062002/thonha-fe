@@ -1,7 +1,9 @@
 import React from "react";
-import { IconBell, IconSettings } from "../../icon/Index"   ;
+import { IconBell, IconSettings } from "../../icon/Index";
+import { getStoredUser } from "../../../api/authApi";
 
 export function HeaderDashboard({ onToggleNotif }) {
+  const fullName = getStoredUser()?.fullName || "Thợ Nhà";
   return (
     <header className="bg-white border-bottom sticky-top z-3 px-4 py-3 d-flex align-items-center justify-content-between">
       <div className="d-flex align-items-center gap-3">
@@ -9,13 +11,13 @@ export function HeaderDashboard({ onToggleNotif }) {
           className="rounded-circle bg-warning bg-opacity-10 text-warning fw-bold d-flex align-items-center justify-content-center"
           style={{ width: "40px", height: "40px", color: "#F5820D" }}
         >
-          T
+          {fullName[0]?.toUpperCase()}
         </div>
         <div>
           <p className="text-muted mb-0" style={{ fontSize: "11px" }}>
             Xin chào,
           </p>
-          <p className="fw-bold text-dark mb-0 leading-tight">Trần Minh Tuấn</p>
+          <p className="fw-bold text-dark mb-0 leading-tight">{fullName}</p>
         </div>
       </div>
 

@@ -2,105 +2,85 @@ import axiosClient from "./axiosClient";
 
 /**
  * Repair Request API
- * 
+ *
  * Backend endpoints:
- * - POST   /api/v1/repair-requests (multipart/form-data)
+ * - POST   /api/v1/repair-requests            (multipart/form-data: part "data" + "files")
  * - GET    /api/v1/repair-requests
  * - GET    /api/v1/repair-requests/{id}
- * - DELETE /api/v1/repair-requests/{id} (cancel)
- * 
- * Request payload (data part):
+ * - PATCH  /api/v1/repair-requests/{id}/cancel
+ *
+ * Payload (part "data"):
  * {
  *   categoryId: number,
  *   description: string,
- *   priorityLevel: "NORMAL" | "URGENT",
+ *   priorityLevel: "LOW" | "MEDIUM" | "HIGH" | "URGENT",
  *   addressId?: number,
- *   addressText?: string,
+ *   addressText: string,
  *   lat?: number,
  *   lng?: number,
  *   desiredTime: "ASAP" | "SCHEDULED",
- *   scheduledAt?: string (ISO datetime)
+ *   scheduledAt?: string (ISO local datetime)
  * }
+ *
+ * Mọi hàm đọc dữ liệu đều trả về object đã qua transformRequest()
+ * (có thêm maYeuCau, danhMuc, diaChi, trangThai, dinhKemUrls cho UI).
  */
 
-/**
- * Create a new repair request with optional file attachments
- * @param {Object} data - Repair request data
- * @param {number} data.categoryId - Service category ID
- * @param {string} data.description - Description of the issue
- * @param {"NORMAL"|"URGENT"} data.priorityLevel - Priority level
- * @param {number} [data.addressId] - Address ID (optional if addressText provided)
- * @param {string} [data.addressText] - Address text (optional if addressId provided)
- * @param {number} [data.lat] - Latitude
- * @param {number} [data.lng] - Longitude
- * @param {"ASAP"|"SCHEDULED"} data.desiredTime - Service timing
- * @param {string} [data.scheduledAt] - Scheduled datetime (ISO string) if desiredTime is SCHEDULED
- * @param {File[]} [files] - Array of image/video files
- * @returns {Promise<Object>} Created repair request
- */
+const LEGACY_PRIORITY = { NORMAL: "MEDIUM" };
+
 export async function createRepairRequest(data, files = []) {
   const formData = new FormData();
-  
+
   const payload = {
     categoryId: data.categoryId,
     description: data.description,
-    priorityLevel: data.priorityLevel,
-    addressId: data.addressId,
+    priorityLevel: LEGACY_PRIORITY[data.priorityLevel] ?? data.priorityLevel,
+    addressId: data.addressId ?? null,
     addressText: data.addressText,
-    lat: data.lat,
-    lng: data.lng,
+    lat: data.lat ?? null,
+    lng: data.lng ?? null,
     desiredTime: data.desiredTime,
     scheduledAt: data.scheduledAt || null,
   };
-  
+
   formData.append(
     "data",
     new Blob([JSON.stringify(payload)], { type: "application/json" })
   );
-  
+
   files.forEach((file) => {
     if (file) formData.append("files", file);
   });
-  
-  return axiosClient.post("/repair-requests", formData, {
+
+  const created = await axiosClient.post("/repair-requests", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
+  return transformRequest(created);
 }
 
-/**
- * Get current user's repair requests
- * @returns {Promise<Array>} List of repair requests
- */
+/** Danh sách yêu cầu của người dùng hiện tại */
 export async function getMyRepairRequests() {
-  return axiosClient.get("/repair-requests");
+  const list = await axiosClient.get("/repair-requests");
+  return (list ?? []).map(transformRequest);
 }
 
-/**
- * Get repair request detail by ID
- * @param {number|string} id - Repair request ID
- * @returns {Promise<Object>} Repair request detail
- */
+/** Chi tiết một yêu cầu */
 export async function getRepairRequestById(id) {
-  return axiosClient.get(`/repair-requests/${id}`);
+  const request = await axiosClient.get(`/repair-requests/${id}`);
+  return transformRequest(request);
 }
 
-/**
- * Cancel repair request
- * @param {number|string} id - Repair request ID
- * @returns {Promise<Object>} Cancelled repair request
- */
+/** Huỷ yêu cầu (BE: PATCH /{id}/cancel — không phải DELETE) */
 export async function cancelRepairRequest(id) {
-  return axiosClient.delete(`/repair-requests/${id}`);
+  const request = await axiosClient.patch(`/repair-requests/${id}/cancel`);
+  return transformRequest(request);
 }
 
-/**
- * Map backend status to frontend display status
- * @param {string} status - Backend status
- * @returns {string} Frontend status key
- */
+/** Map RepairStatus của BE → key hiển thị ở FE */
 export function mapRequestStatus(status) {
   const statusMap = {
     PENDING_MATCH: "CHO_GHEP_THO",
+    MATCHING: "DANG_GHEP_THO",
     MATCHED: "DA_GHEP",
     ON_THE_WAY: "DANG_DI_CHUYEN",
     IN_PROGRESS: "DANG_SUA",
@@ -111,19 +91,15 @@ export function mapRequestStatus(status) {
   return statusMap[status] || status;
 }
 
-/**
- * Transform backend repair request to frontend format
- * @param {Object} request - Backend repair request
- * @returns {Object} Frontend formatted request
- */
+/** RepairRequestResponse (BE) → object dùng cho UI */
 export function transformRequest(request) {
+  if (!request) return request;
   return {
-    id: request.id,
-    maYeuCau: request.requestCode,
-    danhMuc: request.categoryName || request.category?.name,
-    diaChi: request.addressText,
-    trangThai: mapRequestStatus(request.status),
-    dinhKemUrls: request.attachments?.map(a => a.url) || request.attachmentUrls,
     ...request,
+    maYeuCau: request.requestCode,
+    danhMuc: request.categoryName ?? request.category?.name,
+    diaChi: request.addressText ?? request.address?.fullAddress,
+    trangThai: mapRequestStatus(request.status),
+    dinhKemUrls: (request.attachments ?? []).map((a) => a.url).filter(Boolean),
   };
 }

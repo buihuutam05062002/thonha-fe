@@ -94,7 +94,7 @@ export default function WorkerDashboard() {
   if (!profile) return null; 
 
   if (profile.approvalStatus !== "APPROVED") {
-    return <ApprovalPending status={profile.approvalStatus} />;
+    return <ApprovalPending status={profile.approvalStatus} reason={profile.rejectReason} />;
   }
 
   return (

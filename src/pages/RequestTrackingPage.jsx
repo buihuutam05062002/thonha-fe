@@ -5,6 +5,7 @@ import {getRepairRequestById} from '../api/repairRequestApi';
 const STAGES = ['CHO_GHEP_THO', 'DA_GHEP', 'DANG_DI_CHUYEN', 'DANG_SUA', 'HOAN_THANH'];
 const LABELS = {
     CHO_GHEP_THO: 'Chờ ghép thợ',
+    DANG_GHEP_THO: 'Đang ghép thợ',
     DA_GHEP: 'Đã ghép thợ',
     DANG_DI_CHUYEN: 'Thợ đang di chuyển',
     DANG_SUA: 'Đang sửa chữa',
@@ -14,6 +15,7 @@ const LABELS = {
 };
 const BADGE_TONE = {
     CHO_GHEP_THO: 'wait',
+    DANG_GHEP_THO: 'wait',
     DA_GHEP: 'active',
     DANG_DI_CHUYEN: 'active',
     DANG_SUA: 'active',
@@ -79,7 +81,9 @@ export default function RequestTrackingPage({requestId, onBack, onCreateAnother}
         );
     }
 
-    const stageIndex = STAGES.indexOf(yc.trangThai);
+    // "Đang ghép thợ" nằm cùng chặng với "Chờ ghép thợ" trên timeline
+    const stageKey = yc.trangThai === 'DANG_GHEP_THO' ? 'CHO_GHEP_THO' : yc.trangThai;
+    const stageIndex = STAGES.indexOf(stageKey);
     const isTerminalBad = yc.trangThai === 'KHONG_TIM_THAY_THO' || yc.trangThai === 'DA_HUY';
 
     return (

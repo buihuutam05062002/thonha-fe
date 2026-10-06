@@ -2,7 +2,7 @@ import { USER_STATUSES } from "./userApi";
 
 // const formatId = (id) => `ND-${String(id).padStart(6, "0")}`;
 const statusLabel = (v) => USER_STATUSES.find((s) => s.value === v)?.label ?? v;
-const statusClass = (v) => v.toLowerCase();
+const statusClass = (v) => String(v ?? "").toLowerCase();
 
 export default function UserTable({ users, loading, error, onView, onToggleLock }) {
   return (

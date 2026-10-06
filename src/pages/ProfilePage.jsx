@@ -1,6 +1,6 @@
 import {useEffect, useState, useCallback, useRef} from 'react';
 import {ArrowLeft, Home, LogOut, MapPin, Plus, Save, Trash2, UserCircle} from 'lucide-react';
-import {getMe, updateProfile as updateMe, logout} from '../api/authApi';
+import {getMe, updateProfile as updateMe, logout, saveSession} from '../api/authApi';
 import {getAddresses, createAddress, deleteAddress, setDefaultAddress} from '../api/addressApi';
 import {autocompleteAddress, getPlaceDetail} from '../api/mapApi';
 
@@ -25,8 +25,8 @@ export default function ProfilePage({onBack, onLoggedOut}) {
         try {
             const [u, a] = await Promise.all([getMe(), getAddresses()]);
             setUser(u);
-            setName(u.hoTen || '');
-            setAvatar(u.anhDaiDien || '');
+            setName(u.fullName || '');
+            setAvatar(u.avatarUrl || '');
             setAddresses(a);
         } catch (e) {
             setError(e.message);
@@ -44,8 +44,9 @@ export default function ProfilePage({onBack, onLoggedOut}) {
         setSaving(true);
         setError('');
         try {
-            const u = await updateMe({hoTen: name, anhDaiDien: avatar});
+            const u = await updateMe({fullName: name, avatarUrl: avatar});
             setUser(u);
+            saveSession({user: u}); // đồng bộ user đã lưu trong localStorage
         } catch (e) {
             setError(e.message);
         } finally {
@@ -137,16 +138,16 @@ export default function ProfilePage({onBack, onLoggedOut}) {
                 <h1>Hồ sơ</h1></header>
             <div className="body profile-body">
                 <div className="profile-head">
-                    <div className="profile-avatar">{user?.anhDaiDien ? <img src={user.anhDaiDien} alt=""/> :
+                    <div className="profile-avatar">{user?.avatarUrl ? <img src={user.avatarUrl} alt=""/> :
                         <UserCircle size={48}/>}</div>
-                    <div><h2>{user?.hoTen}</h2><span className="role">Khách hàng</span></div>
+                    <div><h2>{user?.fullName}</h2><span className="role">Khách hàng</span></div>
                 </div>
                 <form onSubmit={save}><label className="label">Họ và tên<input className="input" value={name}
                                                                                onChange={e => setName(e.target.value)}
                                                                                required maxLength={100}/></label><label
                     className="label">Email<input className="input" value={user?.email || 'Chưa cập nhật'}
                                                   readOnly/></label><label className="label">Số điện thoại<input
-                    className="input" value={user?.soDienThoai || 'Chưa cập nhật'} readOnly/></label><label
+                    className="input" value={user?.phoneNumber || 'Chưa cập nhật'} readOnly/></label><label
                     className="label">Ảnh đại diện (URL)<input className="input" value={avatar}
                                                                onChange={e => setAvatar(e.target.value)}
                                                                placeholder="https://..."/></label>{error &&

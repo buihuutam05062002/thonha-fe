@@ -1,12 +1,11 @@
-import axios from "axios";
+import axiosClient, { API_BASE_URL } from "../../api/axiosClient";
 
-export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080/api/v1";
+export { API_BASE_URL };
 
 export const ROLES = [
   { value: "CUSTOMER", label: "Khách hàng" },
-  { value: "EMPLOYEE", label: "Nhân viên" },
   { value: "WORKER", label: "Thợ" },
+  { value: "ADMIN", label: "Quản trị viên" },
 ];
 
 export const USER_STATUSES = [
@@ -16,36 +15,17 @@ export const USER_STATUSES = [
   { value: "DELETED", label: "Đã xóa" },
 ];
 
-const api = axios.create({ baseURL: API_BASE_URL });
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("accessToken");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
-
-api.interceptors.response.use(
-  (res) => res,
-  (err) => {
-    const msg =
-      err.response?.data?.message ??
-      `Lỗi ${err.response?.status ?? "mạng"}: không thể tải dữ liệu`;
-    return Promise.reject(new Error(msg));
-  }
-);
+const toViewModel = (u) => ({ ...u, name: u.fullName, userStatus: u.status });
 
 export async function fetchUsers({ keyword, role, userStatus, page = 0, size = 20 }) {
-  // Backend merge currently exposes a paged admin user list without filters.
-  // Fetch enough rows, then apply Tam's existing UI filters/pagination client-side.
-  const { data } = await api.get("/admin/users", {
+  // BE hiện chỉ có GET /admin/users phân trang, chưa có bộ lọc.
+  // Lấy đủ dòng rồi lọc/phân trang phía client.
+  // Endpoint này trả thẳng Page (không bọc ApiResponse) → axiosClient trả nguyên body.
+  const data = await axiosClient.get("/admin/users", {
     params: { page: 0, size: 1000, sort: "id,desc" },
   });
 
-  let content = (data.content ?? []).map((u) => ({
-    ...u,
-    name: u.fullName,
-    userStatus: u.status,
-  }));
+  let content = (Array.isArray(data) ? data : data?.content ?? []).map(toViewModel);
 
   if (keyword?.trim()) {
     const q = keyword.trim().toLowerCase();
@@ -63,14 +43,15 @@ export async function fetchUsers({ keyword, role, userStatus, page = 0, size = 2
   return { content: content.slice(start, start + size), totalPages };
 }
 
+// Lưu ý: BE chưa có GET /admin/users/{id}
 export async function fetchUserById(id) {
-  const { data } = await api.get(`/admin/users/${id}`);
-  return { ...data, name: data.fullName, userStatus: data.status };
+  const data = await axiosClient.get(`/admin/users/${id}`);
+  return toViewModel(data);
 }
 
 export async function updateUserStatus(id, userStatus) {
-  const { data } = await api.patch(`/admin/users/${id}/status`, null, {
+  const data = await axiosClient.patch(`/admin/users/${id}/status`, null, {
     params: { status: userStatus },
   });
-  return { ...data, name: data.fullName, userStatus: data.status };
+  return toViewModel(data);
 }

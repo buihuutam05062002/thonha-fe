@@ -30,7 +30,7 @@ const STEP_LABELS = ['Dịch vụ', 'Sự cố', 'Địa chỉ', 'Thời gian', 
 const EMPTY_FORM = {
     danhMucId: null,
     moTa: '',
-    mucDoUuTien: 'NORMAL',
+    mucDoUuTien: 'MEDIUM',
     diaChiId: null,
     diaChiSnapshot: '',
     lat: null,
@@ -187,7 +187,7 @@ export default function CreateRequestPage() {
         if (n === 1 && !form.danhMucId) return 'Vui lòng chọn danh mục dịch vụ';
         if (n === 2 && form.moTa.trim().length < 10) return 'Mô tả cần ít nhất 10 ký tự để thợ hiểu sự cố';
         if (n === 3 && !form.diaChiSnapshot.trim()) return 'Vui lòng nhập địa chỉ cần sửa';
-        if (n === 4 && form.loaiThoiGian === 'HEN_GIO') {
+        if (n === 4 && form.loaiThoiGian === 'SCHEDULED') {
             if (!form.thoiGianHen) return 'Vui lòng chọn ngày giờ hẹn';
             if (new Date(form.thoiGianHen) <= new Date()) return 'Thời gian hẹn phải ở tương lai';
         }
@@ -221,16 +221,17 @@ export default function CreateRequestPage() {
         setSubmitting(true);
         setError('');
         try {
+            // Tên field phải khớp CreateRepairRequest của BE (tiếng Anh)
             const data = {
-                danhMucId: form.danhMucId,
-                moTa: form.moTa.trim(),
-                mucDoUuTien: form.mucDoUuTien,
-                diaChiId: null,
-                diaChiSnapshot: form.diaChiSnapshot.trim(),
+                categoryId: form.danhMucId,
+                description: form.moTa.trim(),
+                priorityLevel: form.mucDoUuTien,
+                addressId: form.diaChiId,
+                addressText: form.diaChiSnapshot.trim(),
                 lat: form.lat,
                 lng: form.lng,
-                loaiThoiGian: form.loaiThoiGian,
-                thoiGianHen: form.loaiThoiGian === 'HEN_GIO' ? form.thoiGianHen : null,
+                desiredTime: form.loaiThoiGian,
+                scheduledAt: form.loaiThoiGian === 'SCHEDULED' ? form.thoiGianHen : null,
             };
             const res = await createRepairRequest(data, media.map((m) => m.file));
             setResult(res);
@@ -355,7 +356,7 @@ export default function CreateRequestPage() {
                                                 onClick={() => setField('danhMucId', c.id)}
                                             >
                                                 <span className="tile-icon"><Icon size={22} aria-hidden="true"/></span>
-                                                <span>{c.ten}</span>
+                                                <span>{c.name}</span>
                                             </button>
                                         );
                                     })}
@@ -413,7 +414,7 @@ export default function CreateRequestPage() {
 
                             <span className="label">Mức độ</span>
                             <div className="chips" role="radiogroup" aria-label="Mức độ ưu tiên">
-                                {[['NORMAL', 'Thường'], ['URGENT', 'Khẩn cấp']].map(([v, l]) => (
+                                {[['MEDIUM', 'Thường'], ['URGENT', 'Khẩn cấp']].map(([v, l]) => (
                                     <button
                                         key={v}
                                         type="button"
@@ -679,7 +680,7 @@ export default function CreateRequestPage() {
                             <dl className="summary">
                                 <div>
                                     <dt>Thiết bị</dt>
-                                    <dd>{category?.ten}</dd>
+                                    <dd>{category?.name}</dd>
                                 </div>
                                 <div>
                                     <dt>Sự cố</dt>

@@ -1,4 +1,4 @@
-import {Routes, Route, Link, useNavigate, Navigate} from 'react-router-dom';
+import {Routes, Route, Link, useNavigate, useParams, Navigate} from 'react-router-dom';
 import CreateRequestPage from '../../pages/CreateRequestPage.jsx';
 import ProfilePage from '../../pages/ProfilePage.jsx';
 import RequestTrackingPage from '../../pages/RequestTrackingPage.jsx';
@@ -103,6 +103,11 @@ function Landing() {
     </div>;
 }
 
+function RequestRoute() {
+    const {id} = useParams();
+    return <RequestTrackingPage requestId={Number(id)} onBack={() => location.href = '/'} onCreateAnother={() => location.href = '/create'}/>;
+}
+
 function CustomerRoute({children}) { return <div className="customer-ui">{children}</div>; }
 
 export default function CustomerApp() {
@@ -110,6 +115,6 @@ export default function CustomerApp() {
         <Route index element={<Landing/>}/>
         <Route path="create" element={<CreateRequestPage/>}/>
         <Route path="profile" element={<ProfilePage onBack={() => location.href = '/'} onLoggedOut={() => location.href = '/auth'}/>}/>
-        <Route path="request/:id" element={<RequestTrackingPage requestId={Number(location.pathname.split('/').pop())} onBack={() => location.href = '/'} onCreateAnother={() => location.href = '/create'}/>}/>
+        <Route path="request/:id" element={<RequestRoute/>}/>
     </Routes></CustomerRoute>;
 }

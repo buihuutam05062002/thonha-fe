@@ -3,7 +3,12 @@ import { STATUSES } from "./workerApprovalApi";
 
 const statusLabel = (v) => STATUSES.find((s) => s.value === v)?.label ?? v;
 const docTypeLabel = (t) =>
-  ({ ID_CARD: "Căn cước công dân", CERTIFICATE: "Chứng chỉ nghề", OTHER: "Giấy tờ khác" }[t] ?? t);
+  ({
+    CCCD_FRONT: "CCCD mặt trước",
+    CCCD_BACK: "CCCD mặt sau",
+    CERTIFICATE: "Chứng chỉ nghề",
+    DEGREE: "Bằng cấp",
+  }[t] ?? t);
 
 export default function ProfileDetail({ profile, loading, error, onApprove, onReject }) {
   const [rejecting, setRejecting] = useState(false);
@@ -48,6 +53,9 @@ export default function ProfileDetail({ profile, loading, error, onApprove, onRe
       <dl className="wa-fields">
         <dt>Số điện thoại</dt>
         <dd>{profile.phoneNumber || "—"}</dd>
+
+        <dt>Chuyên môn</dt>
+        <dd>{profile.specialtyText || "—"}</dd>
 
         <dt>Khu vực hoạt động</dt>
         <dd>{profile.serviceArea || "—"}</dd>

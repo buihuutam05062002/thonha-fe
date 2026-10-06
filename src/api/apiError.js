@@ -1,22 +1,14 @@
 import axios from "axios";
 
+const NETWORK_MESSAGE =
+  "Không kết nối được tới máy chủ. Vui lòng kiểm tra mạng và thử lại.";
+
 /**
- * Parse API error from axios error
- * @param {Error} error - Axios error or standard error
- * @returns {Object} Normalized error object
+ * Chuẩn hoá mọi loại lỗi về { code, message, status, errors }
+ * @param {Error} error
  */
 export function parseApiError(error) {
-  // New axios client already normalizes errors with code, status, errors properties
-  if (error.isAxiosError) {
-    return {
-      code: error.code,
-      message: error.message,
-      status: error.status,
-      errors: error.errors,
-    };
-  }
-  
-  // Legacy axios error format
+  // Lỗi axios thô (còn response từ server)
   if (axios.isAxiosError(error) && error.response?.data) {
     const data = error.response.data;
     return {
@@ -26,12 +18,21 @@ export function parseApiError(error) {
       errors: data.errors,
     };
   }
-  
-  // Network or unknown error
-  return {
-    code: "NETWORK_ERROR",
-    message: "Không kết nối được tới máy chủ. Vui lòng kiểm tra mạng và thử lại.",
-    status: 0,
-    errors: null,
-  };
+
+  // Lỗi đã được axiosClient chuẩn hoá (có code/status/errors)
+  if (error && (error.code || error.status !== undefined)) {
+    return {
+      code: error.code,
+      message: error.message,
+      status: error.status,
+      errors: error.errors,
+    };
+  }
+
+  // Lỗi thường (vd: new Error("...")) → giữ nguyên thông điệp
+  if (error instanceof Error && error.message && !axios.isAxiosError(error)) {
+    return { code: "UNKNOWN", message: error.message, status: 0, errors: null };
+  }
+
+  return { code: "NETWORK_ERROR", message: NETWORK_MESSAGE, status: 0, errors: null };
 }

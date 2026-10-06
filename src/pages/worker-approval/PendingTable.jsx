@@ -23,8 +23,8 @@ export default function PendingTable({ profiles, loading, error, selectedId, onS
               onClick={() => onSelect(p.id)}
             >
               <td>{p.name}</td>
-              <td>{p.serviceArea || "—"}</td>
-              <td>{p.residenceCity || "—"}</td>
+              <td>{p.specialtyText || "—"}</td>
+              <td>{[p.residenceCity, p.serviceArea].filter(Boolean).join(" · ") || "—"}</td>
               <td>{p.createdAt ? new Date(p.createdAt).toLocaleDateString("vi-VN") : "—"}</td>
             </tr>
           ))}
