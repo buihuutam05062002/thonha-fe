@@ -1,7 +1,7 @@
 import {Send} from 'lucide-react';
 import {useEffect, useLayoutEffect, useRef, useState} from 'react';
-import {createStompClient, fetchHistory} from '../../api/chat.js';
-import {getStoredUser} from '../../api/client.js';
+import {createStompClient, fetchHistory} from '../../api/chatApi.js';
+import {getStoredUser} from '../../api/authApi';
 
 const PAGE_SIZE = 30;
 

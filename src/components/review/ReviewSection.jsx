@@ -1,6 +1,6 @@
 import {Star} from 'lucide-react';
 import {useEffect, useState} from 'react';
-import {createReview, getReview} from '../../api/client.js';
+import {createReview, getReview} from '../../api/reviewApi.js';
 
 const HINTS = ['', 'Rất tệ', 'Chưa tốt', 'Bình thường', 'Tốt', 'Tuyệt vời'];
 

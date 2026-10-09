@@ -1,7 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import AdminLayout from "../../layouts/AdminLayout";
-import UserManagement from "../../pages/user-management/UserManagement";
-import WorkerApprovalPage from "../../pages/worker-approval/WorkerApprovalPage";
+import UserManagement from "../../pages/admin/user-management/UserManagement";
+import WorkerApprovalPage from "../../pages/admin/worker-approval/WorkerApprovalPage";
 
 export default function AdminArea() {
   return (

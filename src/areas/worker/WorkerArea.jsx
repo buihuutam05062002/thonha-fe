@@ -1,7 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import LandingWorker from "../../component/worker/LandingWorker";
-import RegisterWorkerProfilePage from "../../component/worker/RegisterWorkerProfilePage";
-import WorkerDashboard from "../../component/worker/WorkerDashboard";
+import LandingWorker from "../../pages/worker/LandingWorker";
+import RegisterWorkerProfilePage from "../../pages/worker/RegisterWorkerProfilePage";
+import WorkerDashboard from "../../pages/worker/WorkerDashboard";
 
 export default function WorkerArea() {
   return (

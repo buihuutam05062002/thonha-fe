@@ -1,7 +1,7 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 import goongjs from '@goongmaps/goong-js';
 import '@goongmaps/goong-js/dist/goong-js.css';
-import {createStompClient, fetchTracking} from '../../api/tracking.js';
+import {createStompClient, fetchTracking} from '../../api/trackingApi.js';
 
 const MAPTILES_KEY = import.meta.env.VITE_GOONG_MAPTILES_KEY;
 const MAP_STYLE = 'https://tiles.goong.io/assets/goong_map_web.json';
